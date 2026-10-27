@@ -4,6 +4,7 @@
 from datetime import datetime
 from pathlib import Path
 
+import argparse
 import json
 import os
 import shutil
@@ -16,8 +17,9 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer
 
+from variants import OUTPUT_DIR, VariantError, output_dir_for, variant_path
+
 DATA_FILE = Path(__file__).parent / "data.json"
-OUTPUT_DIR = Path(__file__).parent / "output"
 
 # Adjust the gap between the two contact lines (in mm)
 CONTACT_LINE_SPACING = 1 * mm
@@ -48,8 +50,8 @@ def next_archive_path(output_dir: Path, stem: str, now: datetime) -> Path:
     return candidate
 
 
-def load_data() -> dict:
-    with open(DATA_FILE, encoding="utf-8") as f:
+def load_data(path: Path = DATA_FILE) -> dict:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -277,15 +279,40 @@ def generate(
     return out, archived
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Generate the CV PDF.")
+    parser.add_argument(
+        "--variant",
+        metavar="TAG",
+        help="generate from variants/<TAG>.json into output/<TAG>/",
+    )
+    args = parser.parse_args(argv)
+
     try:
         config = load_config()
     except ConfigError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         sys.exit(2)
 
-    data = load_data()
-    out, archived = generate(data, config=config)
+    try:
+        data_path = variant_path(args.variant) if args.variant else DATA_FILE
+    except VariantError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        sys.exit(2)
+
+    if not data_path.exists():
+        print(f"ERROR: CV data not found: {data_path}", file=sys.stderr)
+        sys.exit(2)
+
+    try:
+        data = load_data(data_path)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"ERROR: {data_path} could not be read: {exc}", file=sys.stderr)
+        sys.exit(2)
+
+    out, archived = generate(
+        data, output_dir=output_dir_for(args.variant), config=config
+    )
     if archived:
         print(f"Archived previous version: {archived}")
     print(f"Generated: {out}")

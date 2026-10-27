@@ -120,3 +120,68 @@ def test_build_failure_after_temp_written_leaves_no_temp(
     assert out.read_bytes() == b"previous version"
     assert list(tmp_path.glob("Mohammed-Alama-CV-*.pdf")) == []
     assert not (tmp_path / ".Mohammed-Alama-CV.tmp.pdf").exists()
+
+
+def test_load_data_reads_the_given_path(tmp_path: Path):
+    path = tmp_path / "acme.json"
+    path.write_text('{"name": "Jane"}', encoding="utf-8")
+    assert generate_module.load_data(path) == {"name": "Jane"}
+
+
+def test_main_variant_writes_into_variant_folder_and_leaves_base_untouched(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    variant_file = tmp_path / "acme.json"
+    variant_file.write_text(json.dumps(cv_data()), encoding="utf-8")
+    base_dir = tmp_path / "base"
+    base_dir.mkdir()
+    base_out, _ = generate(cv_data(), output_dir=base_dir, now=NOW, config=TEST_CONFIG)
+    base_bytes = base_out.read_bytes()
+
+    monkeypatch.setattr(generate_module, "load_config", lambda: TEST_CONFIG)
+    monkeypatch.setattr(generate_module, "variant_path", lambda tag: variant_file)
+    monkeypatch.setattr(generate_module, "output_dir_for", lambda tag: tmp_path / tag)
+
+    generate_module.main(["--variant", "acme"])
+
+    assert (tmp_path / "acme" / "Mohammed-Alama-CV.pdf").exists()
+    assert base_out.read_bytes() == base_bytes
+    assert list(base_dir.glob("Mohammed-Alama-CV-*.pdf")) == []
+
+
+def test_main_rejects_invalid_variant_tag(monkeypatch: pytest.MonkeyPatch, capsys):
+    monkeypatch.setattr(generate_module, "load_config", lambda: TEST_CONFIG)
+    with pytest.raises(SystemExit) as excinfo:
+        generate_module.main(["--variant", "../escape"])
+    assert excinfo.value.code == 2
+    assert "../escape" in capsys.readouterr().err
+
+
+def test_main_missing_variant_file_names_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
+):
+    import variants
+
+    monkeypatch.setattr(variants, "VARIANTS_DIR", tmp_path)
+    monkeypatch.setattr(generate_module, "load_config", lambda: TEST_CONFIG)
+    with pytest.raises(SystemExit) as excinfo:
+        generate_module.main(["--variant", "nope"])
+    assert excinfo.value.code == 2
+    assert str(tmp_path / "nope.json") in capsys.readouterr().err
+
+
+def test_main_malformed_variant_file_exits_2_with_one_line(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
+):
+    import variants
+
+    bad = tmp_path / "broken.json"
+    bad.write_text("{not json", encoding="utf-8")
+    monkeypatch.setattr(variants, "VARIANTS_DIR", tmp_path)
+    monkeypatch.setattr(generate_module, "load_config", lambda: TEST_CONFIG)
+    with pytest.raises(SystemExit) as excinfo:
+        generate_module.main(["--variant", "broken"])
+    assert excinfo.value.code == 2
+    err = capsys.readouterr().err
+    assert "broken.json" in err
+    assert len(err.strip().splitlines()) == 1
