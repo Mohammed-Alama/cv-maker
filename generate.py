@@ -277,14 +277,20 @@ def generate(
     return out, archived
 
 
-if __name__ == "__main__":
+def main() -> None:
     try:
         config = load_config()
     except ConfigError as exc:
-        sys.exit(f"ERROR: {exc}")
+        print(f"ERROR: {exc}", file=sys.stderr)
+        sys.exit(2)
+
     data = load_data()
     out, archived = generate(data, config=config)
     if archived:
         print(f"Archived previous version: {archived}")
     print(f"Generated: {out}")
     print(f"Size: {out.stat().st_size / 1024:.1f} KB")
+
+
+if __name__ == "__main__":
+    main()

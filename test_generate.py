@@ -9,6 +9,8 @@ from generate import archive_stamp, generate, next_archive_path
 
 NOW = datetime(2026, 10, 27, 14, 35)
 
+TEST_CONFIG = {"output": {"stem": "Mohammed-Alama-CV"}}
+
 
 def test_archive_stamp_uses_day_month_year():
     assert archive_stamp(NOW) == "27-Oct-26"
@@ -42,7 +44,7 @@ def cv_data() -> dict:
 
 
 def test_first_generation_creates_no_archive(tmp_path: Path):
-    out, archived = generate(cv_data(), output_dir=tmp_path, now=NOW)
+    out, archived = generate(cv_data(), output_dir=tmp_path, now=NOW, config=TEST_CONFIG)
     assert out == tmp_path / "Mohammed-Alama-CV.pdf"
     assert out.read_bytes().startswith(b"%PDF")
     assert archived is None
@@ -52,7 +54,7 @@ def test_first_generation_creates_no_archive(tmp_path: Path):
 def test_regeneration_archives_previous_pdf(tmp_path: Path):
     out = tmp_path / "Mohammed-Alama-CV.pdf"
     out.write_bytes(b"previous version")
-    new_out, archived = generate(cv_data(), output_dir=tmp_path, now=NOW)
+    new_out, archived = generate(cv_data(), output_dir=tmp_path, now=NOW, config=TEST_CONFIG)
     assert archived == tmp_path / "Mohammed-Alama-CV-27-Oct-26.pdf"
     assert archived.read_bytes() == b"previous version"
     assert new_out.read_bytes().startswith(b"%PDF")
@@ -62,7 +64,7 @@ def test_failed_build_keeps_current_pdf_and_leaves_no_temp(tmp_path: Path):
     out = tmp_path / "Mohammed-Alama-CV.pdf"
     out.write_bytes(b"previous version")
     with pytest.raises(KeyError):
-        generate({"name": "Broken"}, output_dir=tmp_path, now=NOW)
+        generate({"name": "Broken"}, output_dir=tmp_path, now=NOW, config=TEST_CONFIG)
     assert out.read_bytes() == b"previous version"
     assert list(tmp_path.glob("Mohammed-Alama-CV-*.pdf")) == []
     assert not (tmp_path / ".Mohammed-Alama-CV.tmp.pdf").exists()
@@ -80,7 +82,7 @@ def test_archive_copy_failure_keeps_current_pdf(
 
     monkeypatch.setattr(generate_module.shutil, "copy2", boom)
     with pytest.raises(OSError):
-        generate(cv_data(), output_dir=tmp_path, now=NOW)
+        generate(cv_data(), output_dir=tmp_path, now=NOW, config=TEST_CONFIG)
     assert out.read_bytes() == b"previous version"
     assert list(tmp_path.glob("Mohammed-Alama-CV-*.pdf")) == []
     assert not (tmp_path / ".Mohammed-Alama-CV.tmp.pdf").exists()
@@ -114,7 +116,7 @@ def test_build_failure_after_temp_written_leaves_no_temp(
 
     monkeypatch.setattr(generate_module.SimpleDocTemplate, "build", explode)
     with pytest.raises(OSError):
-        generate(cv_data(), output_dir=tmp_path, now=NOW)
+        generate(cv_data(), output_dir=tmp_path, now=NOW, config=TEST_CONFIG)
     assert out.read_bytes() == b"previous version"
     assert list(tmp_path.glob("Mohammed-Alama-CV-*.pdf")) == []
     assert not (tmp_path / ".Mohammed-Alama-CV.tmp.pdf").exists()

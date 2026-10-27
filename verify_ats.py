@@ -406,7 +406,8 @@ def main() -> None:
     try:
         config = load_config()
     except ConfigError as exc:
-        sys.exit(f"ERROR: {exc}")
+        print(f"ERROR: {exc}", file=sys.stderr)
+        sys.exit(2)
 
     path = pdf_path(config)
     if not path.exists():

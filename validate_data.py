@@ -110,7 +110,8 @@ def main() -> None:
     try:
         config = load_config()
     except ConfigError as exc:
-        sys.exit(f"ERROR: {exc}")
+        print(f"ERROR: {exc}", file=sys.stderr)
+        sys.exit(2)
     ok = run(args.yaml_path, config)
     sys.exit(0 if ok else 1)
 
