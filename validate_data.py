@@ -122,7 +122,11 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(2)
 
     try:
-        yaml_path = variant_path(args.variant) if args.variant else args.yaml_path
+        yaml_path = (
+            variant_path(args.variant)
+            if args.variant is not None
+            else args.yaml_path
+        )
     except VariantError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         sys.exit(2)

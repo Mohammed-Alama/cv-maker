@@ -185,3 +185,13 @@ def test_main_malformed_variant_file_exits_2_with_one_line(
     err = capsys.readouterr().err
     assert "broken.json" in err
     assert len(err.strip().splitlines()) == 1
+
+
+def test_main_empty_variant_tag_is_rejected(monkeypatch: pytest.MonkeyPatch, capsys):
+    monkeypatch.setattr(generate_module, "load_config", lambda: TEST_CONFIG)
+    with pytest.raises(SystemExit) as excinfo:
+        generate_module.main(["--variant", ""])
+    assert excinfo.value.code == 2
+    err = capsys.readouterr().err
+    assert "invalid variant tag" in err
+    assert len(err.strip().splitlines()) == 1

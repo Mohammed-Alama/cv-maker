@@ -295,7 +295,7 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(2)
 
     try:
-        data_path = variant_path(args.variant) if args.variant else DATA_FILE
+        data_path = variant_path(args.variant) if args.variant is not None else DATA_FILE
     except VariantError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         sys.exit(2)
