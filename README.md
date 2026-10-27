@@ -3,12 +3,16 @@
 ATS-friendly CV PDFs generated from one JSON file, with a dated archive of every
 version you replace.
 
+<img src="docs/preview.png" alt="Generated CV, page one" width="480">
+
 ## What it does
 
 - **One source of truth.** Your CV lives in `data.json`; the PDF is generated from it.
 - **Pre-flight checks.** A data gate catches stale facts before rendering, and an ATS
   report scores the generated PDF across keywords, sections, metrics, dates and
   phrasing.
+- **Job variants.** Keep a tailored, standalone CV per application in `variants/`, each
+  in its own output folder with its own archive history.
 - **Version history.** Regenerating never overwrites the previous PDF — the old one is
   archived with the date it was retired.
 - **Tests.** The generator, versioning and verifier helpers are covered by pytest.
@@ -45,6 +49,7 @@ Size: 11.2 KB
 | `generate.py` | Renders the PDF with ReportLab and archives the previous version |
 | `validate_data.py` | Data gate: years, typos, dangling fragments, lost keywords |
 | `verify_ats.py` | Extracts the generated PDF's text and reports ATS findings |
+| `variants/` | Standalone per-job CV documents (optional) |
 | `output/` | Generated PDFs and archives (gitignored) |
 | `config.py` | Loads and validates `cv.config.json` |
 
@@ -102,6 +107,39 @@ comma-separated string; group names are title-cased in the PDF (`core_practices`
 > example, contact details and all. Replace the whole file with your own before
 > generating your CV, and replace the values in `cv.config.json` as described below.
 
+## Job variants
+
+A variant is a complete copy of `data.json` at `variants/<tag>.json` — not a patch.
+Keep one per application and edit its title, summary, skills and bullets freely; the
+base CV in `data.json` is never touched.
+
+```bash
+mkdir -p variants
+cp data.json variants/acme.json   # then edit variants/acme.json
+make variant V=acme               # validate -> generate -> verify
+```
+
+The command runs the same quality gate as `make all`, writes
+`output/acme/Mohammed-Alama-CV.pdf`, then runs the ATS report against that PDF. Old
+versions are archived inside the same folder, e.g.
+`output/acme/Mohammed-Alama-CV-27-Oct-26.pdf`.
+
+Tags must match `^[a-z0-9][a-z0-9-]*$` (lowercase letters, digits and hyphens).
+Anything else — uppercase, dots, slashes, `..` — exits 2 without reading or writing a
+file.
+
+Direct equivalents:
+
+```bash
+.venv/bin/python validate_data.py --variant acme
+.venv/bin/python generate.py --variant acme
+.venv/bin/python verify_ats.py --variant acme
+```
+
+The ATS required terms in `cv.config.json` are global, so a variant that drops one of
+them fails `verify` by design. `make all` is base-only and never generates, verifies or
+archives a variant.
+
 ## Config
 
 All author-specific tooling values live in `cv.config.json`. A missing or malformed
@@ -131,12 +169,13 @@ existing archives keep their old names.
 | `make verify` | Run the ATS report against the current PDF |
 | `make test` | Run the test suite |
 | `make all` | `generate` then `verify` |
+| `make variant V=<tag>` | Validate, generate and verify one variant |
 
 Direct equivalents use `.venv/bin/python`: `validate_data.py`, `generate.py`,
 `verify_ats.py`, `-m pytest -q`.
 
 `validate_data.py` accepts `--yaml-path PATH` to check a data file other than
-`data.json`.
+`data.json`, or `--variant TAG` to check `variants/<tag>.json`.
 
 ## Version history
 
@@ -147,6 +186,9 @@ Before a new PDF replaces the current one, the old file is copied to:
 3. `X-{DD-Mon-YY}-{HHMM}-{N}.pdf` if that minute's file exists too — `...-1435-2.pdf`
 
 The date is the day the version was retired, not the day it was first built.
+
+Archives live beside the PDF they replaced: `output/` for the base CV and
+`output/<tag>/` for a variant.
 
 The new PDF is built into a hidden temp file and swapped into place only after a
 successful render; archives are staged as `.part` before rename. A failed build, a
