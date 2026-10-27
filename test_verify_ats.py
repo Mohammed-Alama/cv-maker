@@ -4,11 +4,13 @@ from verify_ats import (
     check_page_count,
     check_extractability,
     check_section_order,
+    check_required_terms,
     check_keyword_stuffing,
     check_ats_hostile_characters,
     check_action_verb_bullets,
     check_duplicate_lines,
     check_work_bullet_count,
+    pdf_path,
 )
 
 
@@ -57,14 +59,30 @@ def test_check_section_order_wrong():
 def test_check_keyword_stuffing_clean():
     # "Laravel" appears 5 times — under MAX_KEYWORD_REPEAT (12)
     text = "Laravel " * 5
-    assert check_keyword_stuffing(text) == {}
+    assert check_keyword_stuffing(text, ["Laravel"]) == {}
 
 
 def test_check_keyword_stuffing_found():
     text = "Laravel " * 15
-    result = check_keyword_stuffing(text)
+    result = check_keyword_stuffing(text, ["Laravel"])
     assert "Laravel" in result
     assert result["Laravel"] == 15
+
+
+def test_check_required_terms_uses_given_terms():
+    assert check_required_terms("Laravel and PHP", ["Laravel", "PHP", "AWS"]) == ["AWS"]
+
+
+def test_check_required_terms_all_present():
+    assert check_required_terms("Laravel and PHP", ["Laravel", "PHP"]) == []
+
+
+def test_check_keyword_stuffing_uses_given_terms():
+    assert check_keyword_stuffing("Ruby " * 13, ["Ruby"]) == {"Ruby": 13}
+
+
+def test_pdf_path_follows_config_stem():
+    assert pdf_path({"output": {"stem": "Jane-Doe-CV"}}).name == "Jane-Doe-CV.pdf"
 
 
 def test_check_ats_hostile_characters_none():

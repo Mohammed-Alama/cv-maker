@@ -8,32 +8,9 @@ from pathlib import Path
 
 import pdfplumber
 
-PDF_PATH = Path(__file__).parent / "output" / "Mohammed-Alama-CV.pdf"
+from config import ConfigError, load_config
 
-REQUIRED_TERMS = [
-    "Mohammed Alama",
-    "mohammedalsayed9688@gmail.com",
-    "Laravel",
-    "PHP",
-    "SinaiTaxi",
-    "Domain-Driven Design",
-    "SUMMARY",
-    "TECHNICAL SKILLS",
-    "WORK HISTORY",
-    "EDUCATION",
-    "LANGUAGES",
-    "IsDB",
-    "IHF",
-    "Islamic Development Bank",
-    "International Handball Federation",
-    "Spryker",
-    "Actindo",
-    "Docker Compose",
-    "OAuth",
-    "OpenAPI",
-    "AWS",
-    "Azure DevOps",
-]
+OUTPUT_DIR = Path(__file__).parent / "output"
 
 SECTION_HEADERS = [
     "SUMMARY",
@@ -104,8 +81,13 @@ LEADERSHIP_KEYWORDS = [
 MIN_LEADERSHIP_SIGNALS = 4
 
 
-def check_required_terms(text: str) -> list[str]:
-    return [t for t in REQUIRED_TERMS if t not in text]
+def pdf_path(config: dict) -> Path:
+    """Return the generated PDF path for the configured output stem."""
+    return OUTPUT_DIR / f"{config['output']['stem']}.pdf"
+
+
+def check_required_terms(text: str, terms: list[str]) -> list[str]:
+    return [t for t in terms if t not in text]
 
 
 def check_section_headers(text: str) -> list[str]:
@@ -209,10 +191,10 @@ def check_section_order(text: str) -> list[str]:
     return []
 
 
-def check_keyword_stuffing(text: str) -> dict[str, int]:
+def check_keyword_stuffing(text: str, terms: list[str]) -> dict[str, int]:
     return {
         term: count
-        for term in REQUIRED_TERMS
+        for term in terms
         if (count := len(re.findall(re.escape(term), text, re.IGNORECASE))) > MAX_KEYWORD_REPEAT
     }
 
@@ -252,7 +234,7 @@ def check_work_bullet_count(text: str) -> int:
     return sum(1 for l in section.split("\n") if l.strip().startswith("- "))
 
 
-def verify(path: Path) -> bool:
+def verify(path: Path, terms: list[str]) -> bool:
     with pdfplumber.open(path) as pdf:
         pages = pdf.pages
         text = "\n".join(page.extract_text() or "" for page in pages)
@@ -272,12 +254,12 @@ def verify(path: Path) -> bool:
     passed = True
 
     # Dim 1+2: keyword coverage
-    missing_terms = check_required_terms(text)
+    missing_terms = check_required_terms(text, terms)
     if missing_terms:
         print(f"FAIL [Dim 1+2 keywords]        missing: {missing_terms}")
         passed = False
     else:
-        print(f"PASS [Dim 1+2 keywords]        all {len(REQUIRED_TERMS)} required terms found")
+        print(f"PASS [Dim 1+2 keywords]        all {len(terms)} required terms found")
 
     # Dim 4: section headers
     missing_headers = check_section_headers(text)
@@ -369,7 +351,7 @@ def verify(path: Path) -> bool:
         print(f"PASS [Dim 4 section order]     sections in expected order")
 
     # Dim 5: keyword stuffing
-    stuffed = check_keyword_stuffing(text)
+    stuffed = check_keyword_stuffing(text, terms)
     if stuffed:
         report = ", ".join(f"{k}×{v}" for k, v in stuffed.items())
         print(f"WARN [Dim 5 keyword stuffing]  overused (>{MAX_KEYWORD_REPEAT}x): {report}")
@@ -421,12 +403,18 @@ def verify(path: Path) -> bool:
 
 
 def main() -> None:
-    if not PDF_PATH.exists():
-        print(f"PDF not found: {PDF_PATH}")
+    try:
+        config = load_config()
+    except ConfigError as exc:
+        sys.exit(f"ERROR: {exc}")
+
+    path = pdf_path(config)
+    if not path.exists():
+        print(f"PDF not found: {path}")
         print("Run: .venv/bin/python generate.py")
         sys.exit(1)
 
-    ok = verify(PDF_PATH)
+    ok = verify(path, config["ats"]["required_terms"])
     sys.exit(0 if ok else 1)
 
 
