@@ -81,3 +81,11 @@ def test_validate_empty_variant_tag_is_rejected(monkeypatch, capsys):
     captured = capsys.readouterr()
     assert "invalid variant tag" in captured.err
     assert "READY FOR GENERATION" not in captured.out
+
+
+def test_validate_variant_and_yaml_path_are_mutually_exclusive():
+    import validate_data
+
+    with pytest.raises(SystemExit) as excinfo:
+        validate_data.main(["--variant", "acme", "--yaml-path", "data.json"])
+    assert excinfo.value.code == 2

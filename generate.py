@@ -21,6 +21,17 @@ from variants import OUTPUT_DIR, VariantError, output_dir_for, variant_path
 
 DATA_FILE = Path(__file__).parent / "data.json"
 
+CV_KEYS = (
+    "name",
+    "title",
+    "contact",
+    "summary",
+    "skills",
+    "experience",
+    "education",
+    "languages",
+)
+
 # Adjust the gap between the two contact lines (in mm)
 CONTACT_LINE_SPACING = 1 * mm
 
@@ -53,6 +64,15 @@ def next_archive_path(output_dir: Path, stem: str, now: datetime) -> Path:
 def load_data(path: Path = DATA_FILE) -> dict:
     with open(path, encoding="utf-8") as f:
         return json.load(f)
+
+
+def validate_cv(data: object) -> None:
+    """Raise ValueError unless `data` is a complete CV document."""
+    if not isinstance(data, dict):
+        raise ValueError("top-level JSON value must be an object")
+    missing = [key for key in CV_KEYS if key not in data]
+    if missing:
+        raise ValueError(f"missing required key(s): {', '.join(missing)}")
 
 
 def make_styles() -> dict:
@@ -306,8 +326,16 @@ def main(argv: list[str] | None = None) -> None:
 
     try:
         data = load_data(data_path)
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         print(f"ERROR: {data_path} could not be read: {exc}", file=sys.stderr)
+        sys.exit(2)
+
+    try:
+        validate_cv(data)
+    except ValueError as exc:
+        print(
+            f"ERROR: {data_path} is not a valid CV document: {exc}", file=sys.stderr
+        )
         sys.exit(2)
 
     out, archived = generate(

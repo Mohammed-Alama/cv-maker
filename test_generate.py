@@ -195,3 +195,95 @@ def test_main_empty_variant_tag_is_rejected(monkeypatch: pytest.MonkeyPatch, cap
     err = capsys.readouterr().err
     assert "invalid variant tag" in err
     assert len(err.strip().splitlines()) == 1
+
+
+def test_main_variant_with_non_object_json_exits_2(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
+):
+    import variants
+
+    vdir = tmp_path / "variants"
+    vdir.mkdir()
+    (vdir / "arr.json").write_text("[]", encoding="utf-8")
+    out_root = tmp_path / "output"
+    monkeypatch.setattr(variants, "VARIANTS_DIR", vdir)
+    monkeypatch.setattr(variants, "OUTPUT_DIR", out_root)
+    monkeypatch.setattr(generate_module, "load_config", lambda: TEST_CONFIG)
+
+    with pytest.raises(SystemExit) as excinfo:
+        generate_module.main(["--variant", "arr"])
+
+    assert excinfo.value.code == 2
+    err = capsys.readouterr().err
+    assert "arr.json" in err
+    assert "object" in err
+    assert len(err.strip().splitlines()) == 1
+    assert not out_root.exists()
+
+
+def test_main_variant_missing_keys_exits_2(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
+):
+    import variants
+
+    vdir = tmp_path / "variants"
+    vdir.mkdir()
+    (vdir / "empty.json").write_text("{}", encoding="utf-8")
+    out_root = tmp_path / "output"
+    monkeypatch.setattr(variants, "VARIANTS_DIR", vdir)
+    monkeypatch.setattr(variants, "OUTPUT_DIR", out_root)
+    monkeypatch.setattr(generate_module, "load_config", lambda: TEST_CONFIG)
+
+    with pytest.raises(SystemExit) as excinfo:
+        generate_module.main(["--variant", "empty"])
+
+    assert excinfo.value.code == 2
+    err = capsys.readouterr().err
+    assert "empty.json" in err
+    assert "name" in err
+    assert len(err.strip().splitlines()) == 1
+    assert not out_root.exists()
+
+
+def test_main_variant_non_utf8_exits_2(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
+):
+    import variants
+
+    vdir = tmp_path / "variants"
+    vdir.mkdir()
+    (vdir / "latin.json").write_bytes(b'{"name": "\xff"}')
+    monkeypatch.setattr(variants, "VARIANTS_DIR", vdir)
+    monkeypatch.setattr(generate_module, "load_config", lambda: TEST_CONFIG)
+
+    with pytest.raises(SystemExit) as excinfo:
+        generate_module.main(["--variant", "latin"])
+
+    assert excinfo.value.code == 2
+    err = capsys.readouterr().err
+    assert "latin.json" in err
+    assert len(err.strip().splitlines()) == 1
+
+
+def test_main_variant_end_to_end_real_path_wiring(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    import variants
+
+    vdir = tmp_path / "variants"
+    vdir.mkdir()
+    (vdir / "acme.json").write_text(json.dumps(cv_data()), encoding="utf-8")
+    out_root = tmp_path / "output"
+    out_root.mkdir()
+    base = out_root / "Mohammed-Alama-CV.pdf"
+    base.write_bytes(b"base")
+
+    monkeypatch.setattr(variants, "VARIANTS_DIR", vdir)
+    monkeypatch.setattr(variants, "OUTPUT_DIR", out_root)
+    monkeypatch.setattr(generate_module, "load_config", lambda: TEST_CONFIG)
+
+    generate_module.main(["--variant", "acme"])
+
+    variant_pdf = out_root / "acme" / "Mohammed-Alama-CV.pdf"
+    assert variant_pdf.read_bytes().startswith(b"%PDF")
+    assert base.read_bytes() == b"base"
