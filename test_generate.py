@@ -86,6 +86,22 @@ def test_archive_copy_failure_keeps_current_pdf(
     assert not (tmp_path / ".Mohammed-Alama-CV.tmp.pdf").exists()
 
 
+def test_output_name_comes_from_config(tmp_path: Path):
+    new_out, _ = generate(
+        cv_data(), output_dir=tmp_path, now=NOW, config={"output": {"stem": "Jane-Doe-CV"}}
+    )
+    assert new_out == tmp_path / "Jane-Doe-CV.pdf"
+    assert list(tmp_path.glob(".Jane-Doe-CV.tmp.pdf")) == []
+
+
+def test_archive_uses_configured_stem(tmp_path: Path):
+    (tmp_path / "Jane-Doe-CV.pdf").write_bytes(b"old")
+    _, archived = generate(
+        cv_data(), output_dir=tmp_path, now=NOW, config={"output": {"stem": "Jane-Doe-CV"}}
+    )
+    assert archived == tmp_path / "Jane-Doe-CV-27-Oct-26.pdf"
+
+
 def test_build_failure_after_temp_written_leaves_no_temp(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):

@@ -7,6 +7,9 @@ from pathlib import Path
 import json
 import os
 import shutil
+import sys
+
+from config import ConfigError, load_config
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
@@ -223,11 +226,14 @@ def generate(
     data: dict,
     output_dir: Path | None = None,
     now: datetime | None = None,
+    config: dict | None = None,
 ) -> tuple[Path, Path | None]:
+    config = config or load_config()
+    stem = config["output"]["stem"]
     output_dir = output_dir or OUTPUT_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
-    out = output_dir / "Mohammed-Alama-CV.pdf"
-    tmp = output_dir / ".Mohammed-Alama-CV.tmp.pdf"
+    out = output_dir / f"{stem}.pdf"
+    tmp = output_dir / f".{stem}.tmp.pdf"
 
     doc = SimpleDocTemplate(
         str(tmp),
@@ -272,8 +278,12 @@ def generate(
 
 
 if __name__ == "__main__":
+    try:
+        config = load_config()
+    except ConfigError as exc:
+        sys.exit(f"ERROR: {exc}")
     data = load_data()
-    out, archived = generate(data)
+    out, archived = generate(data, config=config)
     if archived:
         print(f"Archived previous version: {archived}")
     print(f"Generated: {out}")
