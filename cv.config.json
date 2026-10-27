@@ -1,0 +1,49 @@
+{
+  "output": {
+    "stem": "Mohammed-Alama-CV"
+  },
+  "ats": {
+    "required_terms": [
+      "Mohammed Alama",
+      "mohammedalsayed9688@gmail.com",
+      "Laravel",
+      "PHP",
+      "SinaiTaxi",
+      "Domain-Driven Design",
+      "SUMMARY",
+      "TECHNICAL SKILLS",
+      "WORK HISTORY",
+      "EDUCATION",
+      "LANGUAGES",
+      "IsDB",
+      "IHF",
+      "Islamic Development Bank",
+      "International Handball Federation",
+      "Spryker",
+      "Actindo",
+      "Docker Compose",
+      "OAuth",
+      "OpenAPI",
+      "AWS",
+      "Azure DevOps"
+    ]
+  },
+  "quality": {
+    "years_experience": 9,
+    "stale_years": [7],
+    "required_phrases": ["AI-assisted"],
+    "common_typos": ["Al-assisted"],
+    "retention_keywords": [
+      "Domain-Driven Design",
+      "Modular Monolith",
+      "PostgreSQL",
+      "Spryker",
+      "25"
+    ],
+    "forbidden_regexes": [
+      "\\.\\s+(?:all|zero)\\b",
+      "\\bprocesses\\.\\s+all\\b",
+      "\\bdatabase\\s+zero\\b"
+    ]
+  }
+}
