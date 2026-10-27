@@ -21,6 +21,6 @@ all: generate verify
 
 variant:
 	@test -n "$(V)" || { echo "ERROR: V is required - make variant V=<tag>"; exit 2; }
-	$(PYTHON) validate_data.py --variant $(V)
-	$(PYTHON) generate.py --variant $(V)
-	$(PYTHON) verify_ats.py --variant $(V)
+	$(PYTHON) validate_data.py --variant "$(V)"
+	$(PYTHON) generate.py --variant "$(V)"
+	$(PYTHON) verify_ats.py --variant "$(V)"
