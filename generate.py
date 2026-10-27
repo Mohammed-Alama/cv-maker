@@ -5,6 +5,8 @@ from datetime import datetime
 from pathlib import Path
 
 import json
+import os
+import shutil
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
@@ -199,12 +201,31 @@ def build_languages(languages: list, styles: dict) -> list:
     return story
 
 
-def generate(data: dict) -> Path:
-    OUTPUT_DIR.mkdir(exist_ok=True)
-    out = OUTPUT_DIR / "Mohammed-Alama-CV.pdf"
+def publish(tmp: Path, out: Path, now: datetime) -> Path | None:
+    """Archive the existing `out` (if any) and move `tmp` onto `out`."""
+    archived = None
+    try:
+        if out.exists():
+            archived = next_archive_path(out.parent, out.stem, now)
+            shutil.copy2(out, archived)
+        os.replace(tmp, out)
+    finally:
+        tmp.unlink(missing_ok=True)
+    return archived
+
+
+def generate(
+    data: dict,
+    output_dir: Path | None = None,
+    now: datetime | None = None,
+) -> tuple[Path, Path | None]:
+    output_dir = output_dir or OUTPUT_DIR
+    output_dir.mkdir(parents=True, exist_ok=True)
+    out = output_dir / "Mohammed-Alama-CV.pdf"
+    tmp = output_dir / ".Mohammed-Alama-CV.tmp.pdf"
 
     doc = SimpleDocTemplate(
-        str(out),
+        str(tmp),
         pagesize=A4,
         leftMargin=18 * mm,
         rightMargin=18 * mm,
@@ -237,11 +258,14 @@ def generate(data: dict) -> Path:
     story.extend(build_languages(data["languages"], styles))
 
     doc.build(story)
-    return out
+    archived = publish(tmp, out, now or datetime.now())
+    return out, archived
 
 
 if __name__ == "__main__":
     data = load_data()
-    out = generate(data)
+    out, archived = generate(data)
+    if archived:
+        print(f"Archived previous version: {archived}")
     print(f"Generated: {out}")
     print(f"Size: {out.stat().st_size / 1024:.1f} KB")
