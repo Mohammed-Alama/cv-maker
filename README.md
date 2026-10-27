@@ -21,7 +21,7 @@ version you replace.
 ## Quick start
 
 ```bash
-git clone <repo-url> cv-maker
+git clone https://github.com/Mohammed-Alama/cv-maker.git
 cd cv-maker
 ./setup.sh          # creates .venv and installs requirements.txt
 make all            # validate data -> generate PDF -> run ATS report
