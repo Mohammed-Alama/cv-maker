@@ -1,6 +1,6 @@
 PYTHON := .venv/bin/python
 
-.PHONY: setup validate generate verify all
+.PHONY: setup validate generate verify test all
 
 setup:
 	bash setup.sh
@@ -13,5 +13,8 @@ generate: validate
 
 verify:
 	$(PYTHON) verify_ats.py
+
+test:
+	$(PYTHON) -m pytest -q
 
 all: generate verify
