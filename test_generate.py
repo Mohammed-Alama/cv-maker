@@ -74,11 +74,31 @@ def test_archive_copy_failure_keeps_current_pdf(
     out = tmp_path / "Mohammed-Alama-CV.pdf"
     out.write_bytes(b"previous version")
 
-    def boom(*args, **kwargs):
+    def boom(src, dst):
+        Path(dst).write_bytes(b"previ")
         raise OSError("disk full")
 
     monkeypatch.setattr(generate_module.shutil, "copy2", boom)
     with pytest.raises(OSError):
         generate(cv_data(), output_dir=tmp_path, now=NOW)
     assert out.read_bytes() == b"previous version"
+    assert list(tmp_path.glob("Mohammed-Alama-CV-*.pdf")) == []
+    assert not (tmp_path / ".Mohammed-Alama-CV.tmp.pdf").exists()
+
+
+def test_build_failure_after_temp_written_leaves_no_temp(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    out = tmp_path / "Mohammed-Alama-CV.pdf"
+    out.write_bytes(b"previous version")
+
+    def explode(self, story):
+        Path(self.filename).write_bytes(b"partial pdf")
+        raise OSError("disk full")
+
+    monkeypatch.setattr(generate_module.SimpleDocTemplate, "build", explode)
+    with pytest.raises(OSError):
+        generate(cv_data(), output_dir=tmp_path, now=NOW)
+    assert out.read_bytes() == b"previous version"
+    assert list(tmp_path.glob("Mohammed-Alama-CV-*.pdf")) == []
     assert not (tmp_path / ".Mohammed-Alama-CV.tmp.pdf").exists()

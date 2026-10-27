@@ -207,7 +207,12 @@ def publish(tmp: Path, out: Path, now: datetime) -> Path | None:
     try:
         if out.exists():
             archived = next_archive_path(out.parent, out.stem, now)
-            shutil.copy2(out, archived)
+            partial = archived.with_name(archived.name + ".part")
+            try:
+                shutil.copy2(out, partial)
+                os.replace(partial, archived)
+            finally:
+                partial.unlink(missing_ok=True)
         os.replace(tmp, out)
     finally:
         tmp.unlink(missing_ok=True)
@@ -257,7 +262,11 @@ def generate(
     story.extend(build_education(data["education"], styles))
     story.extend(build_languages(data["languages"], styles))
 
-    doc.build(story)
+    try:
+        doc.build(story)
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        raise
     archived = publish(tmp, out, now or datetime.now())
     return out, archived
 
