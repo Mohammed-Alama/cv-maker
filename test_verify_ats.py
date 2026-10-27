@@ -126,3 +126,33 @@ def test_check_work_bullet_count_with_bullets():
 
 def test_check_work_bullet_count_no_section():
     assert check_work_bullet_count("no work history here") == 0
+
+
+def test_pdf_path_for_variant_uses_subfolder():
+    path = pdf_path({"output": {"stem": "Jane-Doe-CV"}}, "acme")
+    assert path.parent.name == "acme"
+    assert path.name == "Jane-Doe-CV.pdf"
+
+
+def test_verify_rejects_invalid_variant_tag(monkeypatch, capsys):
+    import verify_ats
+
+    monkeypatch.setattr(verify_ats, "load_config", lambda: {"output": {"stem": "X"}})
+    with pytest.raises(SystemExit) as excinfo:
+        verify_ats.main(["--variant", "ACME"])
+    assert excinfo.value.code == 2
+    assert "ACME" in capsys.readouterr().err
+
+
+def test_verify_missing_variant_pdf_hints_the_flag(tmp_path, monkeypatch, capsys):
+    import verify_ats
+
+    monkeypatch.setattr(verify_ats, "load_config", lambda: {"output": {"stem": "X"}})
+    monkeypatch.setattr(
+        verify_ats, "pdf_path", lambda cfg, variant=None: tmp_path / "missing.pdf"
+    )
+    with pytest.raises(SystemExit) as excinfo:
+        verify_ats.main(["--variant", "acme"])
+    assert excinfo.value.code == 1
+    out = capsys.readouterr().out
+    assert "generate.py --variant acme" in out

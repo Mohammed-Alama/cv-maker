@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from validate_data import run
 
 QUALITY = {
@@ -44,3 +46,26 @@ def test_run_fails_on_configured_forbidden_pattern(tmp_path: Path):
 def test_run_fails_on_missing_retention_keyword(tmp_path: Path):
     text = valid_text().replace("Spryker", "Symfony")
     assert run(text_file(tmp_path, text), {"quality": QUALITY}) is False
+
+
+def test_validate_rejects_invalid_variant_tag(monkeypatch, capsys):
+    import validate_data
+
+    monkeypatch.setattr(validate_data, "load_config", lambda: {"quality": QUALITY})
+    with pytest.raises(SystemExit) as excinfo:
+        validate_data.main(["--variant", "../escape"])
+    assert excinfo.value.code == 2
+    assert "../escape" in capsys.readouterr().err
+
+
+def test_validate_variant_reads_variants_dir(tmp_path, monkeypatch, capsys):
+    import validate_data
+    import variants
+
+    (tmp_path / "acme.json").write_text(valid_text(), encoding="utf-8")
+    monkeypatch.setattr(variants, "VARIANTS_DIR", tmp_path)
+    monkeypatch.setattr(validate_data, "load_config", lambda: {"quality": QUALITY})
+    with pytest.raises(SystemExit) as excinfo:
+        validate_data.main(["--variant", "acme"])
+    assert excinfo.value.code == 0
+    assert "READY FOR GENERATION" in capsys.readouterr().out

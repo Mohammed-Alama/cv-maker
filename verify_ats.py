@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Verify ATS compliance of generated PDF across 6 analysis dimensions."""
 
+import argparse
 import re
 import sys
 from datetime import datetime
@@ -9,8 +10,7 @@ from pathlib import Path
 import pdfplumber
 
 from config import ConfigError, load_config
-
-OUTPUT_DIR = Path(__file__).parent / "output"
+from variants import VariantError, output_dir_for
 
 SECTION_HEADERS = [
     "SUMMARY",
@@ -81,9 +81,9 @@ LEADERSHIP_KEYWORDS = [
 MIN_LEADERSHIP_SIGNALS = 4
 
 
-def pdf_path(config: dict) -> Path:
-    """Return the generated PDF path for the configured output stem."""
-    return OUTPUT_DIR / f"{config['output']['stem']}.pdf"
+def pdf_path(config: dict, variant: str | None = None) -> Path:
+    """Return the generated PDF path for the configured stem and variant."""
+    return output_dir_for(variant) / f"{config['output']['stem']}.pdf"
 
 
 def check_required_terms(text: str, terms: list[str]) -> list[str]:
@@ -402,17 +402,33 @@ def verify(path: Path, terms: list[str]) -> bool:
     return passed
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description="Verify ATS compliance of the CV PDF.")
+    parser.add_argument(
+        "--variant",
+        metavar="TAG",
+        help="verify output/<TAG>/<stem>.pdf",
+    )
+    args = parser.parse_args(argv)
+
     try:
         config = load_config()
     except ConfigError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         sys.exit(2)
 
-    path = pdf_path(config)
+    try:
+        path = pdf_path(config, args.variant)
+    except VariantError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        sys.exit(2)
+
     if not path.exists():
         print(f"PDF not found: {path}")
-        print("Run: .venv/bin/python generate.py")
+        hint = ".venv/bin/python generate.py"
+        if args.variant:
+            hint += f" --variant {args.variant}"
+        print(f"Run: {hint}")
         sys.exit(1)
 
     ok = verify(path, config["ats"]["required_terms"])

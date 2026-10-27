@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 from config import ConfigError, load_config
+from variants import VariantError, variant_path
 
 YAML_PATH = Path(__file__).parent / "data.json"
 
@@ -98,21 +99,35 @@ def run(yaml_path: Path, config: dict) -> bool:
     return all_pass
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Validate CV data integrity.")
-    parser.add_argument(
+    source = parser.add_mutually_exclusive_group()
+    source.add_argument(
         "--yaml-path",
         type=Path,
         default=YAML_PATH,
         help="Path to the JSON data file (default: data.json)",
     )
-    args = parser.parse_args()
+    source.add_argument(
+        "--variant",
+        metavar="TAG",
+        help="validate variants/<TAG>.json",
+    )
+    args = parser.parse_args(argv)
+
     try:
         config = load_config()
     except ConfigError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         sys.exit(2)
-    ok = run(args.yaml_path, config)
+
+    try:
+        yaml_path = variant_path(args.variant) if args.variant else args.yaml_path
+    except VariantError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        sys.exit(2)
+
+    ok = run(yaml_path, config)
     sys.exit(0 if ok else 1)
 
 
