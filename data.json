@@ -1,0 +1,189 @@
+{
+  "name": "Mohammed Alama",
+  "title": "Senior Backend Engineer",
+  "contact": {
+    "email": "mohammedalsayed9688@gmail.com",
+    "phone": "+20 103 695 3187",
+    "whatsapp": "+20 122 235 0524",
+    "location": "Cairo, Egypt",
+    "nationality": "Egyptian",
+    "linkedin": "linkedin.com/in/mohammed-alama",
+    "github": "github.com/Mohammed-Alama",
+    "website": "alama.dev"
+  },
+  "summary": [
+    "Senior Backend Engineer and Technical Lead with 9 years of professional experience delivering production-grade PHP and Laravel systems operating in 50+ countries.",
+    " Specializes in Domain-Driven Design (DDD), clean architecture, and modular monolith design across complex domains: Transportation, E-Commerce, Multilateral Banking, and Sports federation systems.",
+    "9 years of end-to-end ownership — from architecture and API design to infrastructure deployment and team mentorship. Deep expertise in event-driven systems, distributed data pipelines, geospatial queries, TDD, and AI-assisted development pipelines."
+  ],
+  "skills": {
+    "core_practices": "Clean Code, SOLID, OOP, Design Patterns, DDD, Modular Programming, Enterprise Patterns, MVC, TDD, REST API, JSON:API, OAuth, OpenAPI",
+    "languages_and_runtimes": "PHP 8.x, Python, SQL, JavaScript, HTML, CSS",
+    "php_frameworks": "Laravel, Symfony, Yii, Zend",
+    "ecommerce_platforms": "Spryker",
+    "databases": "MySQL, PostgreSQL, SQLite, Redis, Elasticsearch, AWS CloudSearch",
+    "orm": "Eloquent, Doctrine, Propel",
+    "testing": "PHPUnit, Codeception, Behat, Pest, Robot Framework",
+    "cms": "Drupal, WordPress",
+    "devops": "Docker, Docker Compose, Nginx, PHP-FPM, Git, Azure CI/CD, AWS",
+    "cloud_services": "AWS, Azure DevOps, DigitalOcean",
+    "infrastructure": "Linux (LEMP Stack), Redis Streams,RabbitMQ ,Queuing Systems, Laravel Horizon",
+    "methodologies": "Agile, Scrum, Architecture Decision Records (ADR), Code Review, Technical Leadership, Mentorship"
+  },
+  "experience": [
+    {
+      "company": "SinaiTaxi",
+      "location": "Cairo, Egypt",
+      "role": "Senior Software Engineer / Lead Engineer",
+      "start": "08/2025",
+      "end": "07/2026",
+      "bullets": [
+        "Architected and shipped a production-grade transportation booking platform from scratch, serving customers across 50+ countries as sole architect and lead developer.",
+        "Structured a Laravel 10 modular monolith with 35 independently maintainable domain modules and 900+ PHP classes following Domain-Driven Design (DDD).",
+        "Designed a polygon-based pricing engine via GIS queries (Eloquent Spatial, MySQL), enabling 22k+ configurable geographic zones adjustable without code changes.",
+        "Built async logging pipeline using Redis Streams to buffer 50K+ events/hr. Workers drain to PostgreSQL for reporting, isolating production MySQL from write overhead.",
+        "Shipped a RESTful JSON API with 200+ endpoints compliant with JSON:API spec, secured with Sanctum token authentication and auto-generated OpenAPI documentation via Scramble.",
+        "Deployed DigitalOcean infrastructure with Nginx, PHP-FPM 8.2, MySQL 8, Postgres 18.3, and Redis; achieved 99.9% uptime and maintained Docker-based local parity to eliminate environment drift.",
+        "Integrated Stripe for payment processing, ZohoBooks for accounting reconciliation, and Mailgun for transactional email.",
+        "Authored comprehensive arc42 architecture documentation for all 25 modules covering architecture overviews, data models, API contracts, and settlement logic.",
+        "Established workflow using ADRs, SpecKit, and quality gates—producing documented architectural decisions across 35 modules to streamline development and align system design."
+      ]
+    },
+    {
+      "company": "Link Development",
+      "location": "Cairo, Egypt",
+      "role": "Software Engineer Specialist",
+      "start": "08/2024",
+      "end": "08/2025",
+      "bullets": [
+        "Took full ownership of development across 2 enterprise client engagements, managing delivery from requirements through production deployment.",
+        "Conducted thorough code reviews applying SOLID principles and design patterns on large codebases — maintaining code quality standards across a 5+ developer team.",
+        "Mentored 4 mid-level developers through structured 1:1s, code review feedback, and Clean Code workshops, accelerating their onboarding onto enterprise-grade PHP codebases."
+      ]
+    },
+    {
+      "company": "Link Development",
+      "location": "Cairo, Egypt",
+      "role": "Software Engineer Specialist / IsDB - Islamic Development Bank ",
+      "start": "08/2024",
+      "end": "08/2025",
+      "bullets": [
+        "Delivered a Corporate Procurement module from scratch for a major multilateral bank, covering 50+ tender workflow types and serving procurement operations across 57 countries.",
+        "Integrated Amazon CloudSearch to index 10,000+ procurement documents, tenders, and supplier records — enabling full-text search across the entire procurement knowledge base.",
+        "Automated procurement notifications via Campaign Monitor email pipelines reaching 200+ registered vendors across tender announcements, bid deadlines, and award decisions.",
+        "Architected a configurable branched content type system supporting 6+ editorial content schemas without code deployments, within strict multilateral bank compliance requirements."
+      ]
+    },
+    {
+      "company": "Link Development",
+      "location": "Cairo, Egypt",
+      "role": "Software Engineer Specialist / IHF - International Handball Federation",
+      "start": "08/2024",
+      "end": "08/2025",
+      "bullets": [
+        "Optimized IHF's global platform performance by replacing full-table-scan user listings with paginated, dedicated COUNT queries—ensuring responsiveness for 200+ admins during live events.",
+        "Decomposed a 5.8k-line monolith controller into 18 single-responsibility controllers, reducing merge conflicts and speeding feature delivery for a codebase serving 209 national federations.",
+        "Replaced full-dataset dropdowns with server-side autocomplete for player/official filtering, cutting page payload and boosting UX for admins managing 600+ players per event.",
+        "Built a custom MySQL driver extension and QueryLogger to capture all DELETE queries, metadata, and row counts, providing tamper-evident trails with 1-month automated retention.",
+        "Led a breaking data model migration introducing a participantMember bridge entity across 12+ controllers to fix access inconsistencies and normalize multi-federation tracking.",
+        "Fixed a critical email bug where cron-driven BCC lists accumulated across iterations; introduced conditional audit logging to eliminate false delivery records across 32 nations."
+      ]
+    },
+    {
+      "company": "NFQ",
+      "location": "Cairo, Egypt",
+      "role": "Backend Engineer",
+      "start": "01/2022",
+      "end": "07/2024",
+      "bullets": [
+        "Led Clean Code workshop for 25+ aspiring developers through the company internship program, covering refactoring techniques, SOLID principles, and practical code smell detection."
+      ]
+    },
+    {
+      "company": "NFQ",
+      "location": "Cairo, Egypt",
+      "role": "Backend Engineer / Spryker - Composable Commerce Platform",
+      "start": "01/2022",
+      "end": "07/2024",
+      "bullets": [
+        "Applied Domain-Driven Design (DDD) principles across 900+ modules in Spryker's composable commerce platform spanning B2B, B2C, and Marketplace layers.",
+        "Extended Spryker Core Commerce with 3 security-focused modules strengthening authentication, authorization, and payment data protection.",
+        "Authored comprehensive test suites using Codeception and Robot Framework, achieving 100% API coverage on the Glue layer.",
+        "Optimized Elasticsearch search queries reducing query response time; introduced Redis caching strategies improving repeat-request performance.",
+        "Used Docker for local development and deployment, maintaining full production environment parity across the team."
+      ]
+    },
+    {
+      "company": "NFQ",
+      "location": "Cairo, Egypt",
+      "role": "Backend Engineer / Actindo - Digital Commerce OS",
+      "start": "01/2022",
+      "end": "07/2024",
+      "bullets": [
+        "Released, tested, and deployed PHP code for Actindo's digital commerce OS, contributing to 3+ integration modules.",
+        "Refactored 2 integration modules responsible for Salesforce Cloud Commerce and Adyen payment gateway, reducing coupling and integration fragility.",
+        "Maintained and extended Actindo's DataHub Module enabling efficient data integration, transformation, and synchronization across 10+ connected data sources.",
+        "Constructed an Elasticsearch archiving module eliminating database bloat across 15+ high-volume entity types, enabling indefinite entity history retention at scale.",
+        "Introduced a queueing system for Actindo API endpoints with rate limiting and 100% request traceability across 10+ outbound API integrations."
+      ]
+    },
+    {
+      "company": "Core Experts Consulting",
+      "location": "Cairo, Egypt",
+      "role": "Backend Engineer",
+      "start": "09/2021",
+      "end": "02/2022",
+      "bullets": [
+        "Collaborated with operations management to identify organizational needs and design effective technical solutions across 2 internal workflow systems.",
+        "Built and launched an internal admin dashboard used by 3 operations teams, replacing manual reporting with real-time data views using Blade components and Metronic.",
+        "Adopted the Pipeline Design Pattern to manage filters on index pages, cutting filter-addition effort from multi-day code changes to 30-minute configuration.",
+        "Connected Oracle DB ensuring seamless database functionality across 2+ enterprise application layers."
+      ]
+    },
+    {
+      "company": "Fritill",
+      "location": "Cairo, Egypt",
+      "role": "Backend Engineer",
+      "start": "03/2020",
+      "end": "08/2021",
+      "bullets": [
+        "Maintained back-end PHP development ensuring website integrity, security, and 99%+ availability.",
+        "Built a reservation system using Laravel with Test-Driven Development (TDD), achieving 90%+ test coverage from day one.",
+        "Established real-time data synchronization between the application and ERPNext via RESTful API, keeping 100% of inventory and booking records in sync across 2 systems.",
+        "Configured authentication using Laravel Passport and created a management dashboard with Laravel Nova, reducing admin task time by 60%.",
+        "Added 3 payment options via CowPay: Credit Card, Fawry, and CashOut."
+      ]
+    },
+    {
+      "company": "Mspired",
+      "location": "Cairo, Egypt",
+      "role": "Backend Engineer",
+      "start": "02/2019",
+      "end": "08/2019",
+      "bullets": [
+        "Converted 8+ mockup designs into responsive web pages using HTML, JavaScript, CSS, AJAX, and JSON.",
+        "Provided website development using WordPress themes with 5+ third-party service integrations.",
+        "Connected Facebook ChatBot via 3 custom REST API endpoints, enabling 24/7 automated customer interaction."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Bachelor of Computer Science",
+      "institution": "Modern Academy",
+      "location": "Maadi, Cairo",
+      "start": "10/2014",
+      "end": "08/2019"
+    }
+  ],
+  "languages": [
+    {
+      "name": "Arabic",
+      "level": "Native"
+    },
+    {
+      "name": "English",
+      "level": "Professional Working Proficiency"
+    }
+  ]
+}
