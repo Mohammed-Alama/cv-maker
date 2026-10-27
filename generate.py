@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ATS-compliant CV generator for Mohammed Alama."""
 
+from datetime import datetime
 from pathlib import Path
 
 import json
@@ -15,6 +16,31 @@ OUTPUT_DIR = Path(__file__).parent / "output"
 
 # Adjust the gap between the two contact lines (in mm)
 CONTACT_LINE_SPACING = 1 * mm
+
+MONTH_ABBR = (
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+)
+
+
+def archive_stamp(now: datetime) -> str:
+    """Return the archive date stamp, e.g. '27-Oct-26'."""
+    return f"{now.day:02d}-{MONTH_ABBR[now.month - 1]}-{now.year % 100:02d}"
+
+
+def next_archive_path(output_dir: Path, stem: str, now: datetime) -> Path:
+    """Return a non-existing archive path for `stem`, de-duplicating per day."""
+    base = f"{stem}-{archive_stamp(now)}"
+    candidate = output_dir / f"{base}.pdf"
+    if not candidate.exists():
+        return candidate
+    clock = now.strftime("%H%M")
+    candidate = output_dir / f"{base}-{clock}.pdf"
+    counter = 2
+    while candidate.exists():
+        candidate = output_dir / f"{base}-{clock}-{counter}.pdf"
+        counter += 1
+    return candidate
 
 
 def load_data() -> dict:
